@@ -6,6 +6,7 @@ from app.infrastructure.azure_search import search_client
 from app.schemas.ChatRequest import ChatRequest
 from app.services.chat_service import ChatService
 from app.services.embedding_service import EmbeddingService
+from app.services.llm_service import LLMService
 from app.services.retrieval_service import RetrievalService
 from app.services.search_service import SearchService
 
@@ -18,13 +19,14 @@ router = APIRouter(
 async def chat(request: ChatRequest):
     search_service = SearchService(search_client)
     embedding_service = EmbeddingService(openai_client)
+    llm_service = LLMService(openai_client)
 
     retrieval_service = RetrievalService(
         search_service,
         embedding_service,
     )
 
-    chat_service = ChatService(retrieval_service)
+    chat_service = ChatService(retrieval_service,llm_service)
 
     return StreamingResponse(
         chat_service.generate_chat(request.query),
