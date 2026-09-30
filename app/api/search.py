@@ -35,3 +35,15 @@ async def vector_search(
         top_k=request.top_k,
     )
     return chunks
+
+
+@router.post("/hybrid_search", response_model=list[ChunkResponse])
+async def hybrid_search(
+    request: SearchRequest,
+    retrieval_service: RetrievalService = Depends(get_retrieval_service),
+) -> list[ChunkResponse]:
+    chunks = await retrieval_service.hybrid_search(
+        query=request.query,
+        top_k=request.top_k,
+    )
+    return chunks

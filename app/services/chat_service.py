@@ -12,7 +12,7 @@ class ChatService:
 
     async def generate_chat(self, query: str):
         yield generate_sse_event({"type": "retrieval.started"})
-        chunks = await self.retrieval_service.search_vector(query, 10)
+        chunks = await self.retrieval_service.hybrid_search(query, 10)
         yield generate_sse_event(
             {
                 "type": "retrieval.completed",
