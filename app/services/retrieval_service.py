@@ -19,3 +19,8 @@ class RetrievalService:
         vector = await self.embedding_service.generate_embedding(query)
         chunks = await self.search_service.hybrid_search(query, vector, top_k)
         return chunks
+    
+    async def document_search(self, query: str, top_k: int, document_ids: list[str]) -> list[ChunkResponse]:
+        vector = await self.embedding_service.generate_embedding(query)
+        chunks = await self.search_service.document_search(query, vector, top_k,document_ids)
+        return chunks

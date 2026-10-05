@@ -3,6 +3,7 @@ from fastapi.params import Depends
 
 from app.dependencies.services import get_retrieval_service, get_search_service
 from app.schemas.ChunkResponse import ChunkResponse
+from app.schemas.DocumentSearchRequest import DocumentSearchRequest
 from app.schemas.SearchRequest import SearchRequest
 from app.services.retrieval_service import RetrievalService
 from app.services.search_service import SearchService
@@ -45,5 +46,18 @@ async def hybrid_search(
     chunks = await retrieval_service.hybrid_search(
         query=request.query,
         top_k=request.top_k,
+    )
+    return chunks
+
+
+@router.post("/search_documents", response_model=list[ChunkResponse])
+async def search_documents(
+    request: DocumentSearchRequest,
+    retrieval_service: RetrievalService = Depends(get_retrieval_service),
+) -> list[ChunkResponse]:
+    chunks = await retrieval_service.document_search(
+        query=request.query,
+        top_k=request.top_k,
+        document_ids=request.document_ids,
     )
     return chunks
