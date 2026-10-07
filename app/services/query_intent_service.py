@@ -10,36 +10,142 @@ class QueryIntentService:
 
     async def get_query_intent(self, query: str):
         instructions = """
-        You are a query intent extraction service for a contract research system.
+        You are a query intent extraction service for an enterprise research system.
 
         Your task is to convert the user's natural-language query into:
-        1. A semantic query used to search document content.
-        2. Zero or more metadata filters used to select documents.
 
-        Available document metadata:
+        1. A semantic_query used to search document content.
+        2. Zero or more metadata filters used to identify the documents
+           that should be searched.
+
+        Each metadata filter must contain:
+
+        - table
+        - field
+        - value
+        - operator
+
+
+        AVAILABLE METADATA
+
+
+        Table: ResearchDocument
+
+        Fields:
 
         - document_type
           Type: string
-          Allowed values: Logistics, Manufacturing, Supply, Purchase
+          Description:
+          The type of research document or agreement.
 
-        - status
+        - source_type
           Type: string
-          Allowed values: Active, Expired, Terminated
+          Description:
+          The source classification of the document.
 
-        - effective_date
-          Type: date
+        - category
+          Type: string
+          Description:
+          The business category of the document.
 
-        - supplier
+        - effective_year
+          Type: integer
+          Description:
+          The year in which the document or agreement became effective.
+
+        - is_active
+          Type: boolean
+          Description:
+          Whether the document or agreement is currently active.
+
+
+        Table: Supplier
+
+        Fields:
+
+        - supplier_name
           Type: string
           Description:
           The supplier, vendor, counterparty, company, or organization
-          associated with the agreement.
-        
-          When the user refers to a named company, vendor, supplier,
-          counterparty, or organization in the context of an agreement,
-          treat that name as a supplier metadata filter.
+          associated with an agreement.
 
-        Supported filter operators:
+        - primary_country
+          Type: string
+          Description:
+          The primary country associated with the supplier.
+
+        - category
+          Type: string
+          Description:
+          The supplier's business category.
+
+        - criticality
+          Type: string
+          Description:
+          The business criticality of the supplier.
+
+        - annual_spend_usd
+          Type: number
+          Description:
+          Annual spend associated with the supplier in USD.
+
+        - risk_tier
+          Type: string
+          Description:
+          The supplier's risk classification.
+
+        - is_active
+          Type: boolean
+          Description:
+          Whether the supplier is active.
+
+
+        Table: Component
+
+        Fields:
+
+        - sku
+          Type: string
+          Description:
+          The SKU identifying the component.
+
+        - component_name
+          Type: string
+          Description:
+          The name of the component.
+
+        - country_of_origin
+          Type: string
+          Description:
+          The country from which the component originates.
+
+        - hs_code
+          Type: string
+          Description:
+          The Harmonized System code associated with the component.
+
+        - fy26_quantity
+          Type: integer
+          Description:
+          The FY26 quantity associated with the component.
+
+        - unit_price_usd
+          Type: number
+          Description:
+          Unit price of the component in USD.
+
+        - is_tariff_sensitive
+          Type: boolean
+          Description:
+          Whether the component is sensitive to tariffs.
+
+        - is_active
+          Type: boolean
+          Description:
+          Whether the component is active.
+
+
+        SUPPORTED OPERATORS
 
         - eq  : equal to
         - neq : not equal to
@@ -49,32 +155,42 @@ class QueryIntentService:
         - lte : less than or equal to
         - in  : matches one of multiple values
 
-        Rules:
 
-        - Only use metadata fields listed above.
-        - Never invent metadata fields.
-        - Only create a filter when the user's query explicitly states or
-          clearly implies a metadata constraint.
+        RULES
+
+        - Only use the tables listed above.
+        - Only use fields belonging to the specified table.
+        - Never invent tables or fields.
+        - Do not expose or use relationship tables such as SupplierDocument
+          in the extracted intent.
+        - Only create a metadata filter when the user's query explicitly
+          states or clearly implies a metadata constraint.
         - Do not invent filter values.
-        - Use only the supported operators listed above.
-        - Use the exact allowed value when a field defines allowed values.
-        - Put document-content concepts into semantic_query.
-        - Do not repeat metadata constraints in semantic_query when they
-          have already been represented as filters.
+        - Use only the supported operators.
+        - Preserve the correct data type for the filter value.
+        - Use boolean true or false for boolean fields.
+        - Put concepts requiring document-content search into semantic_query.
+        - Do not repeat metadata constraints in semantic_query once they
+          have been represented as filters.
+        - When a named supplier, vendor, counterparty, company, or
+          organization identifies which agreements should be searched,
+          use table Supplier and field supplier_name.
+        - Remove supplier names from semantic_query after representing
+          them as metadata filters.
+        - When the user refers to active or current agreements,
+          use ResearchDocument.is_active = true.
+        - When the user refers to inactive agreements,
+          use ResearchDocument.is_active = false.
+        - When the user refers to an effective year,
+          use ResearchDocument.effective_year.
         - If the query contains no metadata constraints, return an empty
           filters list.
-        - If the query is purely metadata-based and contains nothing that
-          requires document-content search, set semantic_query to null.
-        - For dates, return values in YYYY-MM-DD format when a specific
-          date can be determined.
+        - If the query is purely metadata-based and contains nothing
+          requiring document-content search, set semantic_query to null.
         - Do not generate SQL.
+        - Do not determine database joins.
         - Do not answer the user's question.
-        - Only extract the query intent according to the provided output schema.
-        - Named suppliers, vendors, counterparties, companies, or
-          organizations should be extracted into the supplier field
-          when they identify which agreements should be searched.
-        - Remove the supplier name from semantic_query after extracting
-          it as a metadata filter.
+        - Only extract query intent according to the provided output schema.
         """
 
         response = await self.openai_client.responses.parse(
