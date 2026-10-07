@@ -5,6 +5,7 @@ from app.infrastructure.azure_search import search_client
 from app.services.chat_service import ChatService
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
+from app.services.query_intent_service import QueryIntentService
 from app.services.retrieval_service import RetrievalService
 from app.services.search_service import SearchService
 
@@ -23,6 +24,9 @@ def get_llm_service():
     llm_service = LLMService(openai_client)
     return llm_service
 
+def get_query_intent_service():
+    query_intent_service = QueryIntentService(openai_client)
+    return query_intent_service
 
 def get_retrieval_service(
     search_service: SearchService = Depends(get_search_service),
