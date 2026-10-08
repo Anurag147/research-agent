@@ -103,7 +103,7 @@ class SearchService:
             chunks.append(response)
 
         return chunks
-    
+
     async def document_search(
         self, query: str, vector: list[float], top_k: int, document_ids: list[str]
     ) -> list[ChunkResponse]:
@@ -111,17 +111,17 @@ class SearchService:
             vector=vector, fields="Embedding", k_nearest_neighbors=top_k
         )
 
-        filter_expression=None
+        filter_expression = None
 
         if len(document_ids) > 0:
-            ids = ','.join(document_ids)
+            ids = ",".join(str(doc_id).lower() for doc_id in document_ids)
             filter_expression = f"search.in(DocumentId, '{ids}', ',')"
 
         documents = await self.search_client.search(
             search_text=query,
             top=top_k,
             vector_queries=[vector_query],
-            filter=filter_expression
+            filter=filter_expression,
         )
 
         chunks: list[ChunkResponse] = []
@@ -143,4 +143,3 @@ class SearchService:
             chunks.append(response)
 
         return chunks
-        

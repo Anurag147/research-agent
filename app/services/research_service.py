@@ -21,24 +21,28 @@ class ResearchService:
     async def research_document(self, query: str):
         yield generate_sse_event({"type": "retrieval.started"})
         intent = await self.query_intent_service.get_query_intent(query)
-        yield generate_sse_event({"type": "intent.generated", "intent": intent})
-        context=''
+        yield generate_sse_event(
+            {"type": "intent.generated", "intent": intent.model_dump(mode="json")}
+        )
+        context = ""
         if intent.semantic_query is not None:
             yield generate_sse_event({"type": "intent.semantic_query"})
             if len(intent.filters) > 0:
                 document_ids = (
-                    await self.document_repository.get_document_ids_by_filters(intent.filters)
+                    await self.document_repository.get_document_ids_by_filters(
+                        intent.filters
+                    )
                 )
                 yield generate_sse_event(
                     {"type": "intent.document_ids", "document_ids": document_ids}
                 )
                 chunks = await self.retrieval_service.document_search(
-                    intent.semantic_query, document_ids
+                    intent.semantic_query, 10, document_ids
                 )
             else:
-                chunks = await self.retrieval_service.hybrid_search(intent.semantic_query)
-
-            yield generate_sse_event({"type": "intent.chunks", "chunks": chunks})
+                chunks = await self.retrieval_service.hybrid_search(
+                    intent.semantic_query
+                )
             for chunk in chunks:
                 context += chunk.text + "\n\n"
 
