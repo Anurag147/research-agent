@@ -414,6 +414,21 @@ body {
   color: #15803d;
 }
 
+.streaming-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 17px;
+  margin-left: 3px;
+  background: #2563eb;
+  vertical-align: middle;
+  animation: pulse 0.7s infinite alternate;
+}
+
+.chat-message.assistant {
+  margin-top: 8px;
+  padding: 8px 0;
+}
+
 @media (max-width: 640px) {
   .research-tasks-header {
     padding: 14px;

@@ -20,7 +20,7 @@ export default function ResearchChat() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isRunning, setIsRunning] = useState(false);
     const [tasks, setTasks] = useState<ResearchTask[]>([]);
-    const [isTasksExpanded, setIsTasksExpanded] = useState(true);
+    const [isTasksExpanded, setIsTasksExpanded] = useState(false);
     const completedTasks = tasks.filter(
         (task) => task.status === "completed"
     ).length;
@@ -62,7 +62,26 @@ export default function ResearchChat() {
             },
 
             onTextMessageContentEvent: ({event}) => {
-                console.log("Text chunk:", event.delta);
+                setMessages((prev) =>
+                    prev.map((message) =>
+                        message.id === event.messageId
+                            ? {
+                                ...message,
+                                content: message.content + event.delta,
+                            }
+                            : message
+                    )
+                );
+            },
+            onTextMessageStartEvent: ({event}) => {
+                setMessages((prev) => [
+                    ...prev,
+                    {
+                        id: event.messageId,
+                        role: "assistant",
+                        content: "",
+                    },
+                ]);
             },
         });
 
@@ -124,18 +143,13 @@ export default function ResearchChat() {
                     </div>
                 ) : (
                     <div className="message-list">
-                        {messages.map((message) => (
-                            <div
-                                key={message.id}
-                                className={`chat-message ${message.role}`}
-                            >
-                                {message.role === "assistant" && (
-                                    <div className="assistant-avatar">✦</div>
-                                )}
-
-                                <div className="message-content">{message.content}</div>
-                            </div>
-                        ))}
+                        {messages
+                            .filter((message) => message.role === "user")
+                            .map((message) => (
+                                <div key={message.id} className="chat-message user">
+                                    <div className="message-content">{message.content}</div>
+                                </div>
+                            ))}
                         {tasks.length > 0 && (
                             <section className="research-tasks">
                                 <button
@@ -202,12 +216,18 @@ export default function ResearchChat() {
                                 )}
                             </section>
                         )}
-                        {isRunning && (
-                            <div className="research-thinking">
-                                <span className="thinking-dot"/>
-                                Researching...
-                            </div>
-                        )}
+                        {messages
+                            .filter((message) => message.role === "assistant")
+                            .map((message) => (
+                                <div key={message.id} className="chat-message assistant">
+                                    <div className="assistant-avatar">✦</div>
+
+                                    <div className="message-content">
+                                        {message.content}
+                                        {isRunning && <span className="streaming-cursor"/>}
+                                    </div>
+                                </div>
+                            ))}
                     </div>
                 )}
             </main>
