@@ -2,20 +2,24 @@ import asyncio
 import uuid
 
 from ag_ui._generated.models import (
-    TextMessageStartEvent,
+    CustomEvent,
     TextMessageContentEvent,
     TextMessageEndEvent,
+    TextMessageStartEvent,
 )
-from ag_ui.core import EventType, RunAgentInput, RunStartedEvent, RunFinishedEvent
+from ag_ui.core import EventType, RunAgentInput, RunFinishedEvent, RunStartedEvent
 from ag_ui.encoder import EventEncoder
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
+
 from app.simulated_research_service import generate_research_response
+from app.simulated_research_tasks import generate_research_tasks
 
 agui_router = APIRouter(
     prefix="/research",
     tags=["research"],
 )
+
 
 @agui_router.post("/research/")
 async def research(input_data: RunAgentInput):
@@ -34,6 +38,10 @@ async def research(input_data: RunAgentInput):
         )
 
         yield encoder.encode(run_started)
+        await asyncio.sleep(2)
+        async for task in generate_research_tasks():
+            task_event = CustomEvent(name="research.task.updated", value=task)
+            yield encoder.encode(task_event)
         await asyncio.sleep(2)
 
         message_id = str(uuid.uuid4())
@@ -64,6 +72,4 @@ async def research(input_data: RunAgentInput):
         )
         yield encoder.encode(run_finished)
 
-    return StreamingResponse(
-        event_generator(), media_type="text/event-stream"
-    )
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

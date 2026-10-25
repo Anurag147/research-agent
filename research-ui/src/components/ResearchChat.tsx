@@ -8,31 +8,69 @@ type ChatMessage = {
     content: string;
 };
 
+type ResearchTask = {
+    taskId: string;
+    title: string;
+    status: "pending" | "running" | "completed" | "failed";
+    summary: string;
+};
+
 export default function ResearchChat() {
     const [query, setQuery] = useState("");
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isRunning, setIsRunning] = useState(false);
+    const [tasks, setTasks] = useState<ResearchTask[]>([]);
+    const [isTasksExpanded, setIsTasksExpanded] = useState(true);
+    const completedTasks = tasks.filter(
+        (task) => task.status === "completed"
+    ).length;
+
+    const progress = Math.round((completedTasks / 10) * 100);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         const trimmedQuery = query.trim();
-
         if (!trimmedQuery || isRunning) return;
-
         const userMessage: ChatMessage = {
             id: crypto.randomUUID(),
             role: "user",
             content: trimmedQuery,
         };
-
         researchAgent.addMessage({
             id: userMessage.id,
             role: "user",
             content: userMessage.content,
         });
 
+        const subscription = researchAgent.subscribe({
+            onCustomEvent: ({event}) => {
+                if (event.name !== "research.task.updated") return;
+
+                const task = event.value as ResearchTask;
+
+                setTasks((prev) => {
+                    const exists = prev.some((t) => t.taskId === task.taskId);
+
+                    if (!exists) {
+                        return [...prev, task];
+                    }
+
+                    return prev.map((t) =>
+                        t.taskId === task.taskId ? task : t
+                    );
+                });
+            },
+
+            onTextMessageContentEvent: ({event}) => {
+                console.log("Text chunk:", event.delta);
+            },
+        });
+
         setIsRunning(true);
+
+
+        setMessages((prev) => [...prev, userMessage]);
+        setQuery("");
 
         try {
             await researchAgent.runAgent({
@@ -44,11 +82,10 @@ export default function ResearchChat() {
         } catch (error) {
             console.error("AG-UI execution failed:", error);
         } finally {
+            subscription.unsubscribe();
             setIsRunning(false);
         }
 
-        setMessages((prev) => [...prev, userMessage]);
-        setQuery("");
 
         // TODO: AG-UI integration
         // 1. Send query through HttpAgent
@@ -99,7 +136,72 @@ export default function ResearchChat() {
                                 <div className="message-content">{message.content}</div>
                             </div>
                         ))}
+                        {tasks.length > 0 && (
+                            <section className="research-tasks">
+                                <button
+                                    type="button"
+                                    className="research-tasks-header"
+                                    onClick={() => setIsTasksExpanded((prev) => !prev)}
+                                    aria-expanded={isTasksExpanded}
+                                >
+                                    <div className="research-tasks-heading">
+                                        <div className="research-tasks-icon">✦</div>
 
+                                        <div>
+                                            <strong>Research execution</strong>
+                                            <p>
+                                                {isRunning
+                                                    ? "Analyzing your research question..."
+                                                    : "Research execution completed"}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <span className="research-expand-icon">
+        {isTasksExpanded ? "⌃" : "⌄"}
+      </span>
+                                </button>
+
+                                <div className="research-progress">
+                                    <div className="research-progress-label">
+                                        <span>Research progress</span>
+                                        <strong>{completedTasks} / 10 tasks</strong>
+                                    </div>
+
+                                    <div className="research-progress-track">
+                                        <div
+                                            className="research-progress-fill"
+                                            style={{width: `${progress}%`}}
+                                        />
+                                    </div>
+                                </div>
+
+                                {isTasksExpanded && (
+                                    <div className="research-tasks-list">
+                                        {tasks.map((task) => (
+                                            <div className="research-task" key={task.taskId}>
+                                                <div className={`research-task-status ${task.status}`}>
+                                                    {task.status === "completed"
+                                                        ? "✓"
+                                                        : task.status === "running"
+                                                            ? "◌"
+                                                            : "•"}
+                                                </div>
+
+                                                <div className="research-task-details">
+                                                    <strong>{task.title}</strong>
+                                                    <p>{task.summary}</p>
+                                                </div>
+
+                                                <span className={`research-task-label ${task.status}`}>
+              {task.status}
+            </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+                        )}
                         {isRunning && (
                             <div className="research-thinking">
                                 <span className="thinking-dot"/>
