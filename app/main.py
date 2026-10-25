@@ -2,6 +2,7 @@ import logging
 
 from fastapi import FastAPI
 
+from app.api.agui import agui_router
 from app.api.chat import router as chat_router
 from app.api.documents import router as document_router
 from app.api.health import router as health_router
@@ -20,4 +21,5 @@ app.include_router(document_router)
 app.include_router(search_router)
 app.include_router(chat_router)
 app.include_router(query_router)
+app.include_router(agui_router)
 
