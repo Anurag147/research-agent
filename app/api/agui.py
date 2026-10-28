@@ -65,6 +65,21 @@ async def research(input_data: RunAgentInput):
 
         yield encoder.encode(message_ended)
 
+        pie_chart = CustomEvent(
+            name="research.chart.generated",
+            value={
+                "id": "supplier-spend-chart",
+                "type": "pie",
+                "title": "Supplier Spend Distribution",
+                "data": [
+                    {"name": "Microsoft", "value": 40},
+                    {"name": "Google", "value": 30},
+                    {"name": "Amazon", "value": 20},
+                    {"name": "Others", "value": 10},
+                ],
+            },
+        )
+        yield encoder.encode(pie_chart)
         run_finished = RunFinishedEvent(
             type=EventType.RUN_FINISHED,
             thread_id=input_data.thread_id,
