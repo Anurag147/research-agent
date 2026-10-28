@@ -2,6 +2,9 @@ import { useState, type FormEvent, type KeyboardEvent } from "react";
 import "./ResearchChat.css";
 import { researchAgent } from "../agui/researchAgent.ts";
 import PieChartCard from "./PieChartCard.tsx";
+import BarChartCard from "./BarChartCard";
+import LineChartCard from "./LineChartCard";
+import type { ResearchChart } from "../types/researchChart";
 
 type ChatMessage = {
   id: string;
@@ -16,22 +19,13 @@ type ResearchTask = {
   summary: string;
 };
 
-type PieChartReport = {
-  id: string;
-  type: "pie";
-  title: string;
-  data: {
-    name: string;
-    value: number;
-  }[];
-};
-
 export default function ResearchChat() {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [tasks, setTasks] = useState<ResearchTask[]>([]);
-  const [pieChart, setPieChart] = useState<PieChartReport | null>(null);
+  //const [pieChart, setPieChart] = useState<PieChartReport | null>(null);
+  const [charts, setCharts] = useState<ResearchChart[]>([]);
   const [isTasksExpanded, setIsTasksExpanded] = useState(false);
   const completedTasks = tasks.filter(
     (task) => task.status === "completed",
@@ -41,7 +35,7 @@ export default function ResearchChat() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setPieChart(null);
+    setCharts([]);
     const trimmedQuery = query.trim();
     if (!trimmedQuery || isRunning) return;
     const userMessage: ChatMessage = {
@@ -64,8 +58,12 @@ export default function ResearchChat() {
           return;
 
         if (event.name === "research.chart.generated") {
-          const chart = event.value as PieChartReport;
-          setPieChart(chart);
+          const chart = event.value as ResearchChart;
+
+          setCharts((prev) => [
+            ...prev.filter((item) => item.id !== chart.id),
+            chart,
+          ]);
         } else if (event.name === "research.task.updated") {
           const task = event.value as ResearchTask;
 
@@ -246,9 +244,41 @@ export default function ResearchChat() {
                   </div>
                 </div>
               ))}
-            {pieChart && (
-              <PieChartCard title={pieChart.title} data={pieChart.data} />
-            )}
+            <div className="research-charts">
+              {charts.map((chart) => {
+                switch (chart.type) {
+                  case "pie":
+                    return (
+                      <PieChartCard
+                        key={chart.id}
+                        title={chart.title}
+                        data={chart.data}
+                      />
+                    );
+
+                  case "bar":
+                    return (
+                      <BarChartCard
+                        key={chart.id}
+                        title={chart.title}
+                        data={chart.data}
+                      />
+                    );
+
+                  case "line":
+                    return (
+                      <LineChartCard
+                        key={chart.id}
+                        title={chart.title}
+                        data={chart.data}
+                      />
+                    );
+
+                  default:
+                    return null;
+                }
+              })}
+            </div>
           </div>
         )}
       </main>

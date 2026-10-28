@@ -65,10 +65,9 @@ async def research(input_data: RunAgentInput):
 
         yield encoder.encode(message_ended)
 
-        pie_chart = CustomEvent(
-            name="research.chart.generated",
-            value={
-                "id": "supplier-spend-chart",
+        charts = [
+            {
+                "id": "spend-distribution",
                 "type": "pie",
                 "title": "Supplier Spend Distribution",
                 "data": [
@@ -78,8 +77,37 @@ async def research(input_data: RunAgentInput):
                     {"name": "Others", "value": 10},
                 ],
             },
-        )
-        yield encoder.encode(pie_chart)
+            {
+                "id": "delivery-performance",
+                "type": "bar",
+                "title": "Supplier Delivery Performance",
+                "data": [
+                    {"name": "Microsoft", "value": 94},
+                    {"name": "Google", "value": 87},
+                    {"name": "Amazon", "value": 82},
+                    {"name": "Others", "value": 76},
+                ],
+            },
+            {
+                "id": "quarterly-trend",
+                "type": "line",
+                "title": "Quarterly Performance Trend",
+                "data": [
+                    {"name": "Q1", "value": 65},
+                    {"name": "Q2", "value": 72},
+                    {"name": "Q3", "value": 81},
+                    {"name": "Q4", "value": 89},
+                ],
+            },
+        ]
+
+        for chart in charts:
+            yield encoder.encode(
+                CustomEvent(
+                    name="research.chart.generated",
+                    value=chart,
+                )
+            )
         run_finished = RunFinishedEvent(
             type=EventType.RUN_FINISHED,
             thread_id=input_data.thread_id,
