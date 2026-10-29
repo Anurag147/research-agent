@@ -472,3 +472,26 @@ body {
 .research-charts .pie-chart-card {
   margin-top: 0;
 }
+
+.research-response {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.research-response-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.research-response-blocks .pie-chart-card {
+  margin-top: 0;
+}
+
+.research-error {
+  color: #dc2626;
+  font-size: 14px;
+}

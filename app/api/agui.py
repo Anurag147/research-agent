@@ -44,6 +44,41 @@ async def research(input_data: RunAgentInput):
             yield encoder.encode(task_event)
         await asyncio.sleep(2)
 
+        bar_chart = [
+            {
+                "id": "delivery-performance",
+                "type": "bar",
+                "title": "Supplier Delivery Performance",
+                "data": [
+                    {"name": "Microsoft", "value": 94},
+                    {"name": "Google", "value": 87},
+                    {"name": "Amazon", "value": 82},
+                    {"name": "Others", "value": 76},
+                ],
+            },
+            {
+                "id": "quarterly-trend",
+                "type": "line",
+                "title": "Quarterly Performance Trend",
+                "data": [
+                    {"name": "Q1", "value": 65},
+                    {"name": "Q2", "value": 72},
+                    {"name": "Q3", "value": 81},
+                    {"name": "Q4", "value": 89},
+                ],
+            },
+        ]
+
+        for chart in bar_chart:
+            yield encoder.encode(
+                CustomEvent(
+                    name="research.chart.generated",
+                    value=chart,
+                )
+            )
+
+            await asyncio.sleep(2)
+
         message_id = str(uuid.uuid4())
         message_started = TextMessageStartEvent(
             type=EventType.TEXT_MESSAGE_START, message_id=message_id, role="assistant"
@@ -75,28 +110,6 @@ async def research(input_data: RunAgentInput):
                     {"name": "Google", "value": 30},
                     {"name": "Amazon", "value": 20},
                     {"name": "Others", "value": 10},
-                ],
-            },
-            {
-                "id": "delivery-performance",
-                "type": "bar",
-                "title": "Supplier Delivery Performance",
-                "data": [
-                    {"name": "Microsoft", "value": 94},
-                    {"name": "Google", "value": 87},
-                    {"name": "Amazon", "value": 82},
-                    {"name": "Others", "value": 76},
-                ],
-            },
-            {
-                "id": "quarterly-trend",
-                "type": "line",
-                "title": "Quarterly Performance Trend",
-                "data": [
-                    {"name": "Q1", "value": 65},
-                    {"name": "Q2", "value": 72},
-                    {"name": "Q3", "value": 81},
-                    {"name": "Q4", "value": 89},
                 ],
             },
         ]
