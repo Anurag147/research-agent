@@ -5,6 +5,7 @@ from app.db.dependency import get_db
 from app.infrastructure.azure_openai import openai_client
 from app.infrastructure.azure_search import search_client
 from app.repositories.document_repository import DocumentRepository
+from app.services.agui_research_service import AguiResearchService
 from app.services.chat_service import ChatService
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import LLMService
@@ -66,3 +67,15 @@ def get_research_service(
         retrieval_service, query_intent_service, llm_service, document_repository
     )
     return research_service
+
+
+def get_agui_research_service(
+    retrieval_service: RetrievalService = Depends(get_retrieval_service),
+    query_intent_service: QueryIntentService = Depends(get_query_intent_service),
+    llm_service: LLMService = Depends(get_llm_service),
+    document_repository: DocumentRepository = Depends(get_document_repository),
+):
+    agui_research_service = AguiResearchService(
+        retrieval_service, query_intent_service, llm_service, document_repository
+    )
+    return agui_research_service

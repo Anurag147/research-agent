@@ -10,8 +10,11 @@ from ag_ui._generated.models import (
 from ag_ui.core import EventType, RunAgentInput, RunFinishedEvent, RunStartedEvent
 from ag_ui.encoder import EventEncoder
 from fastapi import APIRouter
+from fastapi.params import Depends
 from fastapi.responses import StreamingResponse
 
+from app.dependencies.services import get_agui_research_service
+from app.services.agui_research_service import AguiResearchService
 from app.simulated_research_service import generate_research_response
 from app.simulated_research_tasks import generate_research_tasks
 
@@ -127,5 +130,19 @@ async def research(input_data: RunAgentInput):
             run_id=input_data.run_id,
         )
         yield encoder.encode(run_finished)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@agui_router.post("/agui/research/")
+async def agui_research(
+    input_data: RunAgentInput,
+    aguiService: AguiResearchService = Depends(get_agui_research_service),
+):
+    encoder = EventEncoder(accept="text/event-stream")
+
+    async def event_generator():
+        async for events in aguiService.research_document(input_data):
+            yield encoder.encode(events)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
