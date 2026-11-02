@@ -182,3 +182,35 @@
     border-right-color: var(--border);
   }
 }
+
+.research-markdown p {
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+.research-markdown ul,
+.research-markdown ol {
+  margin: 2px 0 8px;
+  padding-left: 20px;
+}
+
+.research-markdown li {
+  margin: 2px 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+.research-markdown li p {
+  margin: 0;
+}
+
+/* Bold headings followed by lists */
+.research-markdown p:has(> strong:only-child) {
+  margin-bottom: 4px;
+}
+
+/* Nested lists */
+.research-markdown li ul,
+.research-markdown li ol {
+  margin: 3px 0;
+}

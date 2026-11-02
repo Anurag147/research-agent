@@ -21,6 +21,7 @@ class DocumentRepository:
         filters: list[QueryFilter],
     ):
         statement = DocumentQueryBuilder.build_query(filters)
+        print(statement)
         result = await self.db.execute(statement)
         document_ids = result.scalars().all()
         return document_ids

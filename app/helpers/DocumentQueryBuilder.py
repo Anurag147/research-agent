@@ -10,6 +10,7 @@ from app.schemas.QueryIntent import QueryFilter
 class DocumentQueryBuilder:
     filter_map = {
         "document_type": ResearchDocument.document_type,
+        "category": ResearchDocument.category,
         "is_active": ResearchDocument.is_active,
         "effective_year": ResearchDocument.effective_year,
         "supplier_name": Supplier.supplier_name,

@@ -615,7 +615,7 @@ export default function ResearchChat() {
     }
 
     // Our current mock backend emits 10 research tasks.
-    const totalTasks = 10;
+    const totalTasks = tasks.length;
 
     const progress = Math.round(
       (completedTasks / totalTasks) * 100,
