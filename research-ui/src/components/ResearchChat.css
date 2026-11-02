@@ -578,6 +578,43 @@ body {
   margin-bottom: 0;
 }
 
+/* Compact ChatGPT-style bullet lists */
+.research-markdown ul,
+.research-markdown ol {
+  margin: 4px 0 8px !important;
+  padding-left: 18px !important;
+  list-style-position: outside !important;
+}
+
+.research-markdown li {
+  display: list-item !important;
+  margin: 0 0 3px !important;
+  padding-left: 0 !important;
+  line-height: 1.5 !important;
+}
+
+.research-markdown li p {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.5 !important;
+}
+
+.research-markdown li + li {
+  margin-top: 2px !important;
+}
+
+/* Reduce spacing between bold section labels and lists */
+.research-markdown p + ul,
+.research-markdown p + ol {
+  margin-top: 2px !important;
+}
+
+/* Compact nested lists */
+.research-markdown li ul,
+.research-markdown li ol {
+  margin: 3px 0 !important;
+}
+
 .research-response {
   width: 100%;
   display: flex;

@@ -137,7 +137,7 @@ class AguiResearchService:
                         value=retrieval_task,
                     )
                     chunks = await self.retrieval_service.hybrid_search(
-                        intent.semantic_query
+                        intent.semantic_query,10
                     )
                     yield CustomEvent(
                         name="research.task.updated",
