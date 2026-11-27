@@ -19,6 +19,12 @@ class Settings(BaseSettings):
     azure_openai_api_key:str
     azure_openai_embedding_deployment:str
     chat_deployment :str
+    # PostgreSQL configuration
+    postgres_username: str
+    postgres_password: str
+    postgres_server: str
+    postgres_port: int = 5432
+    postgres_db_name: str
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=False
